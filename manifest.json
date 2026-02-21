@@ -1,0 +1,323 @@
+{
+  "version": "1.0.0",
+  "name": "XT Systems Deployment Library",
+  "description": "Public collection of cross-platform deployment scripts for XT Systems managed machines",
+  "repository": "https://github.com/DevXT-LLC/DeploymentLibrary",
+  "deployments": [
+    {
+      "id": "reboot-machine",
+      "name": "Reboot Machine",
+      "description": "Gracefully reboots the machine after a configurable delay (default 5 seconds).",
+      "category": "System",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/reboot.ps1",
+        "linux": "linux/reboot.sh",
+        "macos": "linux/reboot.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "REBOOT_DELAY",
+          "value": "5",
+          "required": false,
+          "description": "Delay in seconds before rebooting"
+        }
+      ]
+    },
+    {
+      "id": "install-brave-browser",
+      "name": "Install Brave Browser",
+      "description": "Downloads and silently installs the latest Brave Browser.",
+      "category": "Software",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-brave.ps1",
+        "linux": "linux/install-brave.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-vscode",
+      "name": "Install Visual Studio Code",
+      "description": "Downloads and silently installs the latest Visual Studio Code.",
+      "category": "Software",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-vscode.ps1",
+        "linux": "linux/install-vscode.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-git",
+      "name": "Install Git",
+      "description": "Downloads and silently installs the latest Git for Windows or Linux.",
+      "category": "Software",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-git.ps1",
+        "linux": "linux/install-git.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-python",
+      "name": "Install Python",
+      "description": "Downloads and installs a specified version of Python (default 3.11).",
+      "category": "Software",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-python.ps1",
+        "linux": "linux/install-python.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "PYTHON_VERSION",
+          "value": "3.11",
+          "required": false,
+          "description": "Python version to install (e.g. 3.11, 3.12)"
+        }
+      ]
+    },
+    {
+      "id": "install-nvidia-cuda",
+      "name": "Install NVIDIA CUDA Toolkit",
+      "description": "Downloads and installs the NVIDIA CUDA toolkit for GPU computing.",
+      "category": "Software",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-nvidia-cuda.ps1",
+        "linux": "linux/install-nvidia-cuda.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "CUDA_VERSION",
+          "value": "12.6",
+          "required": false,
+          "description": "CUDA toolkit version to install"
+        }
+      ]
+    },
+    {
+      "id": "install-powershell",
+      "name": "Install PowerShell (Linux)",
+      "description": "Installs the latest PowerShell on Linux distributions.",
+      "category": "Software",
+      "platforms": ["linux"],
+      "script_language": "bash",
+      "scripts": {
+        "linux": "linux/install-powershell.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-docker",
+      "name": "Install Docker",
+      "description": "Installs Docker Engine and Docker Compose.",
+      "category": "Software",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-docker.ps1",
+        "linux": "linux/install-docker.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-nodejs",
+      "name": "Install Node.js",
+      "description": "Installs Node.js LTS via the official installer or package manager.",
+      "category": "Software",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-nodejs.ps1",
+        "linux": "linux/install-nodejs.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "NODE_VERSION",
+          "value": "22",
+          "required": false,
+          "description": "Major Node.js version to install (e.g. 20, 22)"
+        }
+      ]
+    },
+    {
+      "id": "system-info",
+      "name": "Collect System Information",
+      "description": "Gathers detailed system information including OS, hardware, disk, and network details.",
+      "category": "Diagnostics",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/system-info.ps1",
+        "linux": "linux/system-info.sh",
+        "macos": "linux/system-info.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "disk-cleanup",
+      "name": "Disk Cleanup",
+      "description": "Frees disk space by cleaning temporary files, caches, and logs.",
+      "category": "Maintenance",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/disk-cleanup.ps1",
+        "linux": "linux/disk-cleanup.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "windows-update",
+      "name": "Run Windows Update",
+      "description": "Checks for and installs available Windows updates via PSWindowsUpdate.",
+      "category": "Maintenance",
+      "platforms": ["windows"],
+      "script_language": "powershell",
+      "scripts": {
+        "windows": "windows/windows-update.ps1"
+      },
+      "environment_variables": [
+        {
+          "key": "AUTO_REBOOT",
+          "value": "false",
+          "required": false,
+          "description": "Whether to auto-reboot after updates (true/false)"
+        }
+      ]
+    },
+    {
+      "id": "linux-update",
+      "name": "Run Linux Updates",
+      "description": "Updates all packages on apt, yum, or dnf based Linux distributions.",
+      "category": "Maintenance",
+      "platforms": ["linux"],
+      "script_language": "bash",
+      "scripts": {
+        "linux": "linux/linux-update.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "AUTO_REBOOT",
+          "value": "false",
+          "required": false,
+          "description": "Whether to auto-reboot if a kernel update was installed (true/false)"
+        }
+      ]
+    },
+    {
+      "id": "enable-rdp",
+      "name": "Enable Remote Desktop",
+      "description": "Enables Windows Remote Desktop Protocol (RDP) and configures firewall rules.",
+      "category": "Configuration",
+      "platforms": ["windows"],
+      "script_language": "powershell",
+      "scripts": {
+        "windows": "windows/enable-rdp.ps1"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "enable-ssh",
+      "name": "Enable SSH Server",
+      "description": "Installs and enables the OpenSSH server for remote access.",
+      "category": "Configuration",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/enable-ssh.ps1",
+        "linux": "linux/enable-ssh.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "set-hostname",
+      "name": "Set Hostname",
+      "description": "Changes the machine's hostname. Requires a reboot to take effect.",
+      "category": "Configuration",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/set-hostname.ps1",
+        "linux": "linux/set-hostname.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "NEW_HOSTNAME",
+          "value": "",
+          "required": true,
+          "description": "The new hostname to set"
+        }
+      ]
+    },
+    {
+      "id": "install-chrome",
+      "name": "Install Google Chrome",
+      "description": "Downloads and silently installs the latest Google Chrome.",
+      "category": "Software",
+      "platforms": ["windows", "linux"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-chrome.ps1",
+        "linux": "linux/install-chrome.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-7zip",
+      "name": "Install 7-Zip",
+      "description": "Downloads and silently installs 7-Zip file archiver.",
+      "category": "Software",
+      "platforms": ["windows"],
+      "script_language": "powershell",
+      "scripts": {
+        "windows": "windows/install-7zip.ps1"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "flush-dns",
+      "name": "Flush DNS Cache",
+      "description": "Clears the local DNS resolver cache.",
+      "category": "Network",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/flush-dns.ps1",
+        "linux": "linux/flush-dns.sh",
+        "macos": "linux/flush-dns.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "shutdown-machine",
+      "name": "Shutdown Machine",
+      "description": "Gracefully shuts down the machine after a configurable delay.",
+      "category": "System",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/shutdown.ps1",
+        "linux": "linux/shutdown.sh",
+        "macos": "linux/shutdown.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "SHUTDOWN_DELAY",
+          "value": "5",
+          "required": false,
+          "description": "Delay in seconds before shutting down"
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "name": "XT Systems Deployment Library",
   "description": "Public collection of cross-platform deployment scripts for XT Systems managed machines",
   "repository": "https://github.com/DevXT-LLC/DeploymentLibrary",
@@ -26,15 +26,105 @@
       ]
     },
     {
+      "id": "shutdown-machine",
+      "name": "Shutdown Machine",
+      "description": "Gracefully shuts down the machine after a configurable delay.",
+      "category": "System",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/shutdown.ps1",
+        "linux": "linux/shutdown.sh",
+        "macos": "linux/shutdown.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "SHUTDOWN_DELAY",
+          "value": "5",
+          "required": false,
+          "description": "Delay in seconds before shutting down"
+        }
+      ]
+    },
+    {
+      "id": "system-info",
+      "name": "Collect System Information",
+      "description": "Gathers detailed system information including OS, hardware, disk, and network details.",
+      "category": "Diagnostics",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/system-info.ps1",
+        "linux": "linux/system-info.sh",
+        "macos": "linux/system-info.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "flush-dns",
+      "name": "Flush DNS Cache",
+      "description": "Clears the local DNS resolver cache.",
+      "category": "Network",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/flush-dns.ps1",
+        "linux": "linux/flush-dns.sh",
+        "macos": "macos/flush-dns.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-homebrew",
+      "name": "Install Homebrew",
+      "description": "Installs the Homebrew package manager for macOS.",
+      "category": "Software",
+      "platforms": ["macos"],
+      "script_language": "bash",
+      "scripts": {
+        "macos": "macos/install-homebrew.sh"
+      },
+      "environment_variables": []
+    },
+    {
       "id": "install-brave-browser",
       "name": "Install Brave Browser",
       "description": "Downloads and silently installs the latest Brave Browser.",
       "category": "Software",
-      "platforms": ["windows", "linux"],
+      "platforms": ["windows", "linux", "macos"],
       "script_language": "cross-platform",
       "scripts": {
         "windows": "windows/install-brave.ps1",
-        "linux": "linux/install-brave.sh"
+        "linux": "linux/install-brave.sh",
+        "macos": "macos/install-brave.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-chrome",
+      "name": "Install Google Chrome",
+      "description": "Downloads and silently installs the latest Google Chrome.",
+      "category": "Software",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-chrome.ps1",
+        "linux": "linux/install-chrome.sh",
+        "macos": "macos/install-chrome.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-firefox",
+      "name": "Install Mozilla Firefox",
+      "description": "Downloads and silently installs the latest Mozilla Firefox.",
+      "category": "Software",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-firefox.ps1",
+        "linux": "linux/install-firefox.sh",
+        "macos": "macos/install-firefox.sh"
       },
       "environment_variables": []
     },
@@ -43,24 +133,26 @@
       "name": "Install Visual Studio Code",
       "description": "Downloads and silently installs the latest Visual Studio Code.",
       "category": "Software",
-      "platforms": ["windows", "linux"],
+      "platforms": ["windows", "linux", "macos"],
       "script_language": "cross-platform",
       "scripts": {
         "windows": "windows/install-vscode.ps1",
-        "linux": "linux/install-vscode.sh"
+        "linux": "linux/install-vscode.sh",
+        "macos": "macos/install-vscode.sh"
       },
       "environment_variables": []
     },
     {
       "id": "install-git",
       "name": "Install Git",
-      "description": "Downloads and silently installs the latest Git for Windows or Linux.",
+      "description": "Downloads and silently installs the latest Git.",
       "category": "Software",
-      "platforms": ["windows", "linux"],
+      "platforms": ["windows", "linux", "macos"],
       "script_language": "cross-platform",
       "scripts": {
         "windows": "windows/install-git.ps1",
-        "linux": "linux/install-git.sh"
+        "linux": "linux/install-git.sh",
+        "macos": "macos/install-git.sh"
       },
       "environment_variables": []
     },
@@ -69,11 +161,12 @@
       "name": "Install Python",
       "description": "Downloads and installs a specified version of Python (default 3.11).",
       "category": "Software",
-      "platforms": ["windows", "linux"],
+      "platforms": ["windows", "linux", "macos"],
       "script_language": "cross-platform",
       "scripts": {
         "windows": "windows/install-python.ps1",
-        "linux": "linux/install-python.sh"
+        "linux": "linux/install-python.sh",
+        "macos": "macos/install-python.sh"
       },
       "environment_variables": [
         {
@@ -83,6 +176,80 @@
           "description": "Python version to install (e.g. 3.11, 3.12)"
         }
       ]
+    },
+    {
+      "id": "install-nodejs",
+      "name": "Install Node.js",
+      "description": "Installs Node.js LTS via the official installer or package manager.",
+      "category": "Software",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-nodejs.ps1",
+        "linux": "linux/install-nodejs.sh",
+        "macos": "macos/install-nodejs.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "NODE_VERSION",
+          "value": "22",
+          "required": false,
+          "description": "Major Node.js version to install (e.g. 20, 22)"
+        }
+      ]
+    },
+    {
+      "id": "install-docker",
+      "name": "Install Docker",
+      "description": "Installs Docker Engine and Docker Compose (Desktop on macOS/Windows).",
+      "category": "Software",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-docker.ps1",
+        "linux": "linux/install-docker.sh",
+        "macos": "macos/install-docker.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-rust",
+      "name": "Install Rust",
+      "description": "Installs the Rust programming language and Cargo via rustup.",
+      "category": "Software",
+      "platforms": ["macos"],
+      "script_language": "bash",
+      "scripts": {
+        "macos": "macos/install-rust.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-zoom",
+      "name": "Install Zoom",
+      "description": "Downloads and silently installs the latest Zoom client.",
+      "category": "Software",
+      "platforms": ["windows", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-zoom.ps1",
+        "macos": "macos/install-zoom.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "install-slack",
+      "name": "Install Slack",
+      "description": "Downloads and silently installs the latest Slack client.",
+      "category": "Software",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/install-slack.ps1",
+        "linux": "linux/install-slack.sh",
+        "macos": "macos/install-slack.sh"
+      },
+      "environment_variables": []
     },
     {
       "id": "install-nvidia-cuda",
@@ -117,62 +284,14 @@
       "environment_variables": []
     },
     {
-      "id": "install-docker",
-      "name": "Install Docker",
-      "description": "Installs Docker Engine and Docker Compose.",
+      "id": "install-7zip",
+      "name": "Install 7-Zip",
+      "description": "Downloads and silently installs 7-Zip file archiver.",
       "category": "Software",
-      "platforms": ["windows", "linux"],
-      "script_language": "cross-platform",
+      "platforms": ["windows"],
+      "script_language": "powershell",
       "scripts": {
-        "windows": "windows/install-docker.ps1",
-        "linux": "linux/install-docker.sh"
-      },
-      "environment_variables": []
-    },
-    {
-      "id": "install-nodejs",
-      "name": "Install Node.js",
-      "description": "Installs Node.js LTS via the official installer or package manager.",
-      "category": "Software",
-      "platforms": ["windows", "linux"],
-      "script_language": "cross-platform",
-      "scripts": {
-        "windows": "windows/install-nodejs.ps1",
-        "linux": "linux/install-nodejs.sh"
-      },
-      "environment_variables": [
-        {
-          "key": "NODE_VERSION",
-          "value": "22",
-          "required": false,
-          "description": "Major Node.js version to install (e.g. 20, 22)"
-        }
-      ]
-    },
-    {
-      "id": "system-info",
-      "name": "Collect System Information",
-      "description": "Gathers detailed system information including OS, hardware, disk, and network details.",
-      "category": "Diagnostics",
-      "platforms": ["windows", "linux", "macos"],
-      "script_language": "cross-platform",
-      "scripts": {
-        "windows": "windows/system-info.ps1",
-        "linux": "linux/system-info.sh",
-        "macos": "linux/system-info.sh"
-      },
-      "environment_variables": []
-    },
-    {
-      "id": "disk-cleanup",
-      "name": "Disk Cleanup",
-      "description": "Frees disk space by cleaning temporary files, caches, and logs.",
-      "category": "Maintenance",
-      "platforms": ["windows", "linux"],
-      "script_language": "cross-platform",
-      "scripts": {
-        "windows": "windows/disk-cleanup.ps1",
-        "linux": "linux/disk-cleanup.sh"
+        "windows": "windows/install-7zip.ps1"
       },
       "environment_variables": []
     },
@@ -215,6 +334,39 @@
       ]
     },
     {
+      "id": "macos-update",
+      "name": "Run macOS Updates",
+      "description": "Checks for and installs available macOS software updates via softwareupdate.",
+      "category": "Maintenance",
+      "platforms": ["macos"],
+      "script_language": "bash",
+      "scripts": {
+        "macos": "macos/macos-update.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "AUTO_REBOOT",
+          "value": "false",
+          "required": false,
+          "description": "Whether to auto-reboot after updates if required (true/false)"
+        }
+      ]
+    },
+    {
+      "id": "disk-cleanup",
+      "name": "Disk Cleanup",
+      "description": "Frees disk space by cleaning temporary files, caches, and logs.",
+      "category": "Maintenance",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/disk-cleanup.ps1",
+        "linux": "linux/disk-cleanup.sh",
+        "macos": "macos/disk-cleanup.sh"
+      },
+      "environment_variables": []
+    },
+    {
       "id": "enable-rdp",
       "name": "Enable Remote Desktop",
       "description": "Enables Windows Remote Desktop Protocol (RDP) and configures firewall rules.",
@@ -231,11 +383,24 @@
       "name": "Enable SSH Server",
       "description": "Installs and enables the OpenSSH server for remote access.",
       "category": "Configuration",
-      "platforms": ["windows", "linux"],
+      "platforms": ["windows", "linux", "macos"],
       "script_language": "cross-platform",
       "scripts": {
         "windows": "windows/enable-ssh.ps1",
-        "linux": "linux/enable-ssh.sh"
+        "linux": "linux/enable-ssh.sh",
+        "macos": "macos/enable-ssh.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "enable-screen-sharing",
+      "name": "Enable Screen Sharing",
+      "description": "Enables VNC-based screen sharing for remote access on macOS.",
+      "category": "Configuration",
+      "platforms": ["macos"],
+      "script_language": "bash",
+      "scripts": {
+        "macos": "macos/enable-screen-sharing.sh"
       },
       "environment_variables": []
     },
@@ -244,11 +409,12 @@
       "name": "Set Hostname",
       "description": "Changes the machine's hostname. Requires a reboot to take effect.",
       "category": "Configuration",
-      "platforms": ["windows", "linux"],
+      "platforms": ["windows", "linux", "macos"],
       "script_language": "cross-platform",
       "scripts": {
         "windows": "windows/set-hostname.ps1",
-        "linux": "linux/set-hostname.sh"
+        "linux": "linux/set-hostname.sh",
+        "macos": "macos/set-hostname.sh"
       },
       "environment_variables": [
         {
@@ -260,64 +426,100 @@
       ]
     },
     {
-      "id": "install-chrome",
-      "name": "Install Google Chrome",
-      "description": "Downloads and silently installs the latest Google Chrome.",
-      "category": "Software",
-      "platforms": ["windows", "linux"],
-      "script_language": "cross-platform",
-      "scripts": {
-        "windows": "windows/install-chrome.ps1",
-        "linux": "linux/install-chrome.sh"
-      },
-      "environment_variables": []
-    },
-    {
-      "id": "install-7zip",
-      "name": "Install 7-Zip",
-      "description": "Downloads and silently installs 7-Zip file archiver.",
-      "category": "Software",
-      "platforms": ["windows"],
-      "script_language": "powershell",
-      "scripts": {
-        "windows": "windows/install-7zip.ps1"
-      },
-      "environment_variables": []
-    },
-    {
-      "id": "flush-dns",
-      "name": "Flush DNS Cache",
-      "description": "Clears the local DNS resolver cache.",
-      "category": "Network",
+      "id": "set-timezone",
+      "name": "Set Timezone",
+      "description": "Sets the system timezone to a specified IANA timezone identifier.",
+      "category": "Configuration",
       "platforms": ["windows", "linux", "macos"],
       "script_language": "cross-platform",
       "scripts": {
-        "windows": "windows/flush-dns.ps1",
-        "linux": "linux/flush-dns.sh",
-        "macos": "linux/flush-dns.sh"
-      },
-      "environment_variables": []
-    },
-    {
-      "id": "shutdown-machine",
-      "name": "Shutdown Machine",
-      "description": "Gracefully shuts down the machine after a configurable delay.",
-      "category": "System",
-      "platforms": ["windows", "linux", "macos"],
-      "script_language": "cross-platform",
-      "scripts": {
-        "windows": "windows/shutdown.ps1",
-        "linux": "linux/shutdown.sh",
-        "macos": "linux/shutdown.sh"
+        "windows": "windows/set-timezone.ps1",
+        "linux": "linux/set-timezone.sh",
+        "macos": "macos/set-timezone.sh"
       },
       "environment_variables": [
         {
-          "key": "SHUTDOWN_DELAY",
-          "value": "5",
-          "required": false,
-          "description": "Delay in seconds before shutting down"
+          "key": "TIMEZONE",
+          "value": "",
+          "required": true,
+          "description": "IANA timezone identifier (e.g. America/New_York, Europe/London, US/Pacific)"
         }
       ]
+    },
+    {
+      "id": "create-local-user",
+      "name": "Create Local User Account",
+      "description": "Creates a new local user account with optional admin privileges.",
+      "category": "Configuration",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/create-local-user.ps1",
+        "linux": "linux/create-local-user.sh",
+        "macos": "macos/create-local-user.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "USERNAME",
+          "value": "",
+          "required": true,
+          "description": "Username for the new account"
+        },
+        {
+          "key": "PASSWORD",
+          "value": "",
+          "required": true,
+          "description": "Password for the new account"
+        },
+        {
+          "key": "FULL_NAME",
+          "value": "",
+          "required": false,
+          "description": "Full display name for the account"
+        },
+        {
+          "key": "IS_ADMIN",
+          "value": "false",
+          "required": false,
+          "description": "Whether to grant admin/sudo privileges (true/false)"
+        }
+      ]
+    },
+    {
+      "id": "enable-filevault",
+      "name": "Enable FileVault Encryption",
+      "description": "Enables FileVault full-disk encryption on macOS and saves the recovery key.",
+      "category": "Security",
+      "platforms": ["macos"],
+      "script_language": "bash",
+      "scripts": {
+        "macos": "macos/enable-filevault.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "enable-bitlocker",
+      "name": "Enable BitLocker Encryption",
+      "description": "Enables BitLocker full-disk encryption on Windows with TPM and saves the recovery key.",
+      "category": "Security",
+      "platforms": ["windows"],
+      "script_language": "powershell",
+      "scripts": {
+        "windows": "windows/enable-bitlocker.ps1"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "configure-firewall",
+      "name": "Configure macOS Firewall",
+      "description": "Enables and configures the macOS Application Firewall with stealth mode.",
+      "category": "Security",
+      "platforms": ["macos"],
+      "script_language": "bash",
+      "scripts": {
+        "macos": "macos/configure-firewall.sh"
+      },
+      "environment_variables": []
     }
   ]
 }

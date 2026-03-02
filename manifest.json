@@ -520,6 +520,34 @@
         "macos": "macos/configure-firewall.sh"
       },
       "environment_variables": []
+    },
+    {
+      "id": "vulnerability-scan",
+      "name": "Vulnerability Scan",
+      "description": "Enterprise security vulnerability assessment with 18 scan categories: OS patching, user/auth security, SSH/RDP configuration, network security, filesystem permissions, services, logging/audit, cryptography, malware/rootkit detection, container security, network discovery & neighbor scanning, external exposure & DNS, email security (SPF/DKIM/DMARC), credential & secret hygiene, EDR/XDR detection, backup & recovery verification, data classification & PII scanning, and cyber insurance readiness assessment. Outputs actionable report with severity ratings, remediation steps, and insurance alignment scoring.",
+      "category": "Security",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/vulnerability-scan.ps1",
+        "linux": "linux/vulnerability-scan.sh",
+        "macos": "macos/vulnerability-scan.sh"
+      },
+      "environment_variables": []
+    },
+    {
+      "id": "hipaa-compliance-scan",
+      "name": "HIPAA Compliance Scan",
+      "description": "Comprehensive HIPAA Security Rule assessment covering §164.312 Technical Safeguards (Access Controls, Audit Controls, Integrity, Authentication, Transmission Security), §164.310 Physical Safeguards, §164.308 Administrative Safeguards (Risk Analysis, Incident Response, Evaluation, Workforce Security), §164.530 Data Retention & Disposal, sensitive data/ePHI scanning (SSN, MRN, database detection), and cyber insurance alignment mapping. Outputs compliance report with HIPAA section references, remediation steps, and insurance readiness scoring.",
+      "category": "Security",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/hipaa-compliance-scan.ps1",
+        "linux": "linux/hipaa-compliance-scan.sh",
+        "macos": "macos/hipaa-compliance-scan.sh"
+      },
+      "environment_variables": []
     }
   ]
 }

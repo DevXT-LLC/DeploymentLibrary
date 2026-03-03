@@ -95,16 +95,36 @@ echo "Virtual environment active: ${VENV_DIR}"
 pip install --upgrade pip -q
 
 # ------------------------------------------------------------------
+# 4b. Install uv for faster package management
+# ------------------------------------------------------------------
+UV_AVAILABLE=false
+if pip install uv -q 2>/dev/null; then
+    UV_AVAILABLE=true
+    echo "Using uv for fast package installation."
+else
+    echo "uv not available, using pip (slower but functional)."
+fi
+
+# Helper: install packages via uv (preferred) or pip (fallback)
+pkg_install() {
+    if $UV_AVAILABLE; then
+        uv pip install "$@"
+    else
+        pip install "$@"
+    fi
+}
+
+# ------------------------------------------------------------------
 # 5. Install ezlocalai in editable mode + dependencies
 # ------------------------------------------------------------------
 echo "Installing ezlocalai..."
 cd "${INSTALL_DIR}"
-pip install -e . -q
+pkg_install -e . -q
 
 # Install runtime dependencies (requirements.txt has uvicorn, fastapi, etc.)
 if [ -f "${INSTALL_DIR}/requirements.txt" ]; then
     echo "Installing runtime dependencies..."
-    pip install -r "${INSTALL_DIR}/requirements.txt" -q 2>&1 | tail -5 || true
+    pkg_install -r "${INSTALL_DIR}/requirements.txt" -q 2>&1 | tail -5 || true
 fi
 
 # ------------------------------------------------------------------

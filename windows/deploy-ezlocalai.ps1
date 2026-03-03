@@ -102,11 +102,31 @@ Write-Host "Virtual environment active: $VenvDir"
 & pip install --upgrade pip -q
 
 # ------------------------------------------------------------------
+# 4b. Install uv for faster package management
+# ------------------------------------------------------------------
+$UvAvailable = $false
+try {
+    & pip install uv -q 2>$null
+    $UvAvailable = $true
+    Write-Host "Using uv for fast package installation."
+} catch {
+    Write-Host "uv not available, using pip (slower but functional)."
+}
+
+function Pkg-Install {
+    if ($UvAvailable) {
+        & uv pip install @Args
+    } else {
+        & pip install @Args
+    }
+}
+
+# ------------------------------------------------------------------
 # 5. Install ezlocalai in editable mode
 # ------------------------------------------------------------------
 Write-Host "Installing ezlocalai..."
 Set-Location $InstallDir
-& pip install -e . -q
+Pkg-Install -e . -q
 
 # ------------------------------------------------------------------
 # 6. Write environment configuration

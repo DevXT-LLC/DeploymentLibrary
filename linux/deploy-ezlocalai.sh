@@ -62,6 +62,14 @@ if command -v apt-get &>/dev/null; then
         sudo apt-get install -y "python${PYTHON_VERSION}-venv" 2>/dev/null || \
             sudo apt-get install -y python3-venv 2>/dev/null || true
     fi
+    # On Jetson/ARM64, install system libraries required by NVIDIA PyTorch
+    ARCH=$(uname -m)
+    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+        if [ -f /etc/nv_tegra_release ] || ([ -f /proc/device-tree/model ] && grep -qi "jetson\|tegra" /proc/device-tree/model 2>/dev/null); then
+            echo "Installing Jetson PyTorch system dependencies..."
+            sudo apt-get install -y libopenblas-dev 2>/dev/null || true
+        fi
+    fi
 fi
 
 # ------------------------------------------------------------------
@@ -115,21 +123,53 @@ echo "Virtual environment active: ${VENV_DIR}"
 pip install --upgrade pip -q
 
 # ------------------------------------------------------------------
+# 4b. Install uv for faster package management
+# ------------------------------------------------------------------
+UV_AVAILABLE=false
+if pip install uv -q 2>/dev/null; then
+    UV_AVAILABLE=true
+    echo "Using uv for fast package installation."
+else
+    echo "uv not available, using pip (slower but functional)."
+fi
+
+# Helper: install packages via uv (preferred) or pip (fallback)
+pkg_install() {
+    if $UV_AVAILABLE; then
+        uv pip install "$@"
+    else
+        pip install "$@"
+    fi
+}
+
+# ------------------------------------------------------------------
 # 5. Install ezlocalai in editable mode + dependencies
 # ------------------------------------------------------------------
 echo "Installing ezlocalai..."
 cd "${INSTALL_DIR}"
-pip install -e . -q
+pkg_install -e . -q
 
 # Install runtime dependencies (requirements.txt has uvicorn, fastapi, etc.)
 # The ezlocalai CLI will handle GPU-specific deps (xllamacpp, etc.) on first start
 if [ -f "${INSTALL_DIR}/requirements.txt" ]; then
     echo "Installing runtime dependencies..."
     ARCH=$(uname -m)
+
+    # On Jetson (ARM64 with CUDA), install NVIDIA's CUDA-enabled PyTorch FIRST
+    # PyPI's torch is CPU-only on aarch64; Jetson needs JetPack-compatible wheels
     if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
-        # On ARM64, try batch first (preserves pip version resolver),
+        if [ -f /etc/nv_tegra_release ] || ([ -f /proc/device-tree/model ] && grep -qi "jetson\|tegra" /proc/device-tree/model 2>/dev/null); then
+            if [ -d /usr/local/cuda ] || command -v tegrastats &>/dev/null; then
+                echo "Jetson with CUDA detected — NVIDIA PyTorch will be installed on first start"
+                echo "  (The ezlocalai CLI handles JetPack-version-specific torch wheel selection)"
+            fi
+        fi
+    fi
+
+    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+        # On ARM64, try batch first (preserves version resolver),
         # fall back to individual install if batch fails.
-        if pip install -r "${INSTALL_DIR}/requirements.txt" -q 2>/dev/null; then
+        if pkg_install -r "${INSTALL_DIR}/requirements.txt" -q 2>/dev/null; then
             echo "All packages installed successfully."
         else
             echo "Batch install failed, installing packages individually..."
@@ -140,7 +180,7 @@ if [ -f "${INSTALL_DIR}/requirements.txt" ]; then
                 # Strip inline comments (e.g. "package>=1.0  # description")
                 line=$(echo "$line" | sed 's/ #.*$//')
                 [[ -z "$line" ]] && continue
-                pip install "$line" -q 2>/dev/null || FAILED_PKGS+=("$line")
+                pkg_install "$line" -q 2>/dev/null || FAILED_PKGS+=("$line")
             done < "${INSTALL_DIR}/requirements.txt"
             if [ ${#FAILED_PKGS[@]} -gt 0 ]; then
                 echo "⚠️  ${#FAILED_PKGS[@]} package(s) skipped (no ARM64 wheel):"
@@ -150,7 +190,7 @@ if [ -f "${INSTALL_DIR}/requirements.txt" ]; then
             fi
         fi
     else
-        pip install -r "${INSTALL_DIR}/requirements.txt" -q 2>&1 | tail -5 || true
+        pkg_install -r "${INSTALL_DIR}/requirements.txt" -q 2>&1 | tail -5 || true
     fi
 fi
 

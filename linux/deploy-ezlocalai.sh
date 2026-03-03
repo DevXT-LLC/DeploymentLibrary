@@ -241,4 +241,5 @@ if command -v systemctl &>/dev/null; then
     echo "  sudo systemctl status ezlocalai"
     echo ""
 fi
-echo "Server will be available at: http://localhost:${EZLOCALAI_PORT}"
+LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || ip route get 1 2>/dev/null | awk '{print $7; exit}' || echo "localhost")
+echo "Server will be available at: http://${LOCAL_IP}:${EZLOCALAI_PORT}"

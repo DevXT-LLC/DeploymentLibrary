@@ -234,4 +234,5 @@ echo "macOS LaunchAgent (load/unload):"
 echo "  launchctl load ${PLIST_FILE}"
 echo "  launchctl unload ${PLIST_FILE}"
 echo ""
-echo "Server will be available at: http://localhost:${EZLOCALAI_PORT}"
+LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "localhost")
+echo "Server will be available at: http://${LOCAL_IP}:${EZLOCALAI_PORT}"

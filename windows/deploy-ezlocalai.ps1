@@ -196,4 +196,6 @@ Write-Host "  $ScriptsDir\restart.bat"
 Write-Host "  $ScriptsDir\status.bat"
 Write-Host "  $ScriptsDir\logs.bat"
 Write-Host ""
-Write-Host "Server will be available at: http://localhost:$Port"
+$LocalIP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -notmatch 'Loopback' -and $_.IPAddress -ne '127.0.0.1' } | Select-Object -First 1).IPAddress
+if (-not $LocalIP) { $LocalIP = "localhost" }
+Write-Host "Server will be available at: http://${LocalIP}:$Port"

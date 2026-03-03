@@ -548,6 +548,171 @@
         "macos": "macos/hipaa-compliance-scan.sh"
       },
       "environment_variables": []
+    },
+    {
+      "id": "deploy-ezlocalai",
+      "name": "Deploy ezlocalai",
+      "description": "Deploys ezlocalai local AI inference server. Clones the repo, creates a Python venv, installs via pip, configures model/token defaults, and sets up the service. Supports NVIDIA CUDA and AMD ROCm GPUs with automatic detection.",
+      "category": "Software",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/deploy-ezlocalai.ps1",
+        "linux": "linux/deploy-ezlocalai.sh",
+        "macos": "macos/deploy-ezlocalai.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "EZLOCALAI_INSTALL_DIR",
+          "value": "",
+          "required": false,
+          "description": "Installation directory (default: /opt/ezlocalai on Linux, ~/ezlocalai on macOS, C:\\ezlocalai on Windows)"
+        },
+        {
+          "key": "EZLOCALAI_DEFAULT_MODEL",
+          "value": "unsloth/Qwen3.5-4B-GGUF",
+          "required": false,
+          "description": "Default LLM model to use"
+        },
+        {
+          "key": "EZLOCALAI_MAX_TOKENS",
+          "value": "40000",
+          "required": false,
+          "description": "Maximum input tokens for the LLM"
+        },
+        {
+          "key": "EZLOCALAI_PORT",
+          "value": "8091",
+          "required": false,
+          "description": "Port for the ezlocalai API server"
+        },
+        {
+          "key": "EZLOCALAI_API_KEY",
+          "value": "",
+          "required": false,
+          "description": "API key for the ezlocalai server (empty for no auth)"
+        },
+        {
+          "key": "EZLOCALAI_WHISPER_MODEL",
+          "value": "large-v3",
+          "required": false,
+          "description": "Whisper model for speech-to-text"
+        },
+        {
+          "key": "EZLOCALAI_IMG_MODEL",
+          "value": "Tongyi-MAI/Z-Image-Turbo",
+          "required": false,
+          "description": "Model for image generation (empty to disable)"
+        },
+        {
+          "key": "EZLOCALAI_TTS_ENABLED",
+          "value": "true",
+          "required": false,
+          "description": "Enable text-to-speech (true/false)"
+        },
+        {
+          "key": "EZLOCALAI_STT_ENABLED",
+          "value": "true",
+          "required": false,
+          "description": "Enable speech-to-text (true/false)"
+        },
+        {
+          "key": "EZLOCALAI_QUANT_TYPE",
+          "value": "Q4_K_XL",
+          "required": false,
+          "description": "Quantization type for the model"
+        },
+        {
+          "key": "EZLOCALAI_BATCH_SIZE",
+          "value": "2048",
+          "required": false,
+          "description": "LLM batch size"
+        }
+      ]
+    },
+    {
+      "id": "restart-ezlocalai",
+      "name": "Restart ezlocalai",
+      "description": "Restarts the ezlocalai local AI inference server. Uses systemd on Linux if available, otherwise uses the ezlocalai CLI directly.",
+      "category": "Software",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/restart-ezlocalai.ps1",
+        "linux": "linux/restart-ezlocalai.sh",
+        "macos": "macos/restart-ezlocalai.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "EZLOCALAI_INSTALL_DIR",
+          "value": "",
+          "required": false,
+          "description": "Installation directory (must match deploy-ezlocalai)"
+        }
+      ]
+    },
+    {
+      "id": "stop-ezlocalai",
+      "name": "Stop ezlocalai",
+      "description": "Stops the ezlocalai local AI inference server.",
+      "category": "Software",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/stop-ezlocalai.ps1",
+        "linux": "linux/stop-ezlocalai.sh",
+        "macos": "macos/stop-ezlocalai.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "EZLOCALAI_INSTALL_DIR",
+          "value": "",
+          "required": false,
+          "description": "Installation directory (must match deploy-ezlocalai)"
+        }
+      ]
+    },
+    {
+      "id": "status-ezlocalai",
+      "name": "ezlocalai Status",
+      "description": "Checks the status of the ezlocalai local AI inference server.",
+      "category": "Diagnostics",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/status-ezlocalai.ps1",
+        "linux": "linux/status-ezlocalai.sh",
+        "macos": "macos/status-ezlocalai.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "EZLOCALAI_INSTALL_DIR",
+          "value": "",
+          "required": false,
+          "description": "Installation directory (must match deploy-ezlocalai)"
+        }
+      ]
+    },
+    {
+      "id": "uninstall-ezlocalai",
+      "name": "Uninstall ezlocalai",
+      "description": "Removes the ezlocalai installation including the venv, systemd service (Linux), and LaunchAgent (macOS). Does not remove Docker images.",
+      "category": "Software",
+      "platforms": ["windows", "linux", "macos"],
+      "script_language": "cross-platform",
+      "scripts": {
+        "windows": "windows/uninstall-ezlocalai.ps1",
+        "linux": "linux/uninstall-ezlocalai.sh",
+        "macos": "macos/uninstall-ezlocalai.sh"
+      },
+      "environment_variables": [
+        {
+          "key": "EZLOCALAI_INSTALL_DIR",
+          "value": "",
+          "required": false,
+          "description": "Installation directory (must match deploy-ezlocalai)"
+        }
+      ]
     }
   ]
 }

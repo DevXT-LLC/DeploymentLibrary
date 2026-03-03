@@ -3,8 +3,11 @@
 set -e
 echo "Installing Docker Engine..."
 if command -v apt-get &>/dev/null; then
-    # Remove old versions
+    # Remove old versions and stale Docker apt sources from prior attempts
     sudo apt-get remove -y docker docker-engine docker.io containerd runc 2>/dev/null || true
+    sudo rm -f /etc/apt/sources.list.d/docker.list
+    sudo rm -f /etc/apt/keyrings/docker.gpg
+
     # Install prerequisites
     sudo apt-get update
     sudo apt-get install -y ca-certificates curl gnupg
@@ -23,6 +26,8 @@ if command -v apt-get &>/dev/null; then
             *) CODENAME="bookworm" ;;
         esac
     fi
+
+    echo "Using Docker repo: download.docker.com/linux/${DISTRO_ID} ${CODENAME}"
 
     # Add Docker's official GPG key
     sudo install -m 0755 -d /etc/apt/keyrings

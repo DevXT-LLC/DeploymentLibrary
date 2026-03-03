@@ -55,5 +55,7 @@ sudo systemctl start docker
 sudo systemctl enable docker
 # Add current user to docker group
 sudo usermod -aG docker "$USER" 2>/dev/null || true
-docker --version
+# Use sudo for version check since group membership requires a new session
+sudo docker --version
 echo "Docker installed successfully."
+echo "Note: Log out and back in for docker commands to work without sudo."

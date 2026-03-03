@@ -85,8 +85,10 @@ if [ -d "${INSTALL_DIR}/.git" ]; then
 else
     echo "Cloning ezlocalai repository..."
     sudo mkdir -p "$(dirname "${INSTALL_DIR}")"
-    sudo git clone "${REPO_URL}" "${INSTALL_DIR}"
+    # Create the directory owned by the current user, then clone as user (avoids root-owned .git)
+    sudo mkdir -p "${INSTALL_DIR}"
     sudo chown -R "$(whoami):$(id -gn)" "${INSTALL_DIR}"
+    git clone "${REPO_URL}" "${INSTALL_DIR}"
     cd "${INSTALL_DIR}"
 fi
 

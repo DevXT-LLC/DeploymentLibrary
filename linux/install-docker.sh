@@ -8,12 +8,29 @@ if command -v apt-get &>/dev/null; then
     # Install prerequisites
     sudo apt-get update
     sudo apt-get install -y ca-certificates curl gnupg
+
+    # Detect distro: Ubuntu or Debian (including Raspberry Pi OS)
+    . /etc/os-release
+    DISTRO_ID="${ID}"
+    CODENAME="${VERSION_CODENAME}"
+
+    # Raspberry Pi OS and other Debian derivatives should use "debian"
+    if [ "$DISTRO_ID" != "ubuntu" ]; then
+        DISTRO_ID="debian"
+        # If the codename doesn't have a Docker release (e.g. trixie), fall back to bookworm
+        case "$CODENAME" in
+            bookworm|bullseye|buster) ;;
+            *) CODENAME="bookworm" ;;
+        esac
+    fi
+
     # Add Docker's official GPG key
     sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    curl -fsSL "https://download.docker.com/linux/${DISTRO_ID}/gpg" | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
     # Set up the repository
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/${DISTRO_ID} ${CODENAME} stable" | \
         sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin

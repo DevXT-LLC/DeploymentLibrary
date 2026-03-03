@@ -113,11 +113,18 @@ echo "Virtual environment active: ${VENV_DIR}"
 pip install --upgrade pip -q
 
 # ------------------------------------------------------------------
-# 5. Install ezlocalai in editable mode
+# 5. Install ezlocalai in editable mode + dependencies
 # ------------------------------------------------------------------
 echo "Installing ezlocalai..."
 cd "${INSTALL_DIR}"
 pip install -e . -q
+
+# Install runtime dependencies (requirements.txt has uvicorn, fastapi, etc.)
+# The ezlocalai CLI will handle GPU-specific deps (xllamacpp, etc.) on first start
+if [ -f "${INSTALL_DIR}/requirements.txt" ]; then
+    echo "Installing runtime dependencies..."
+    pip install -r "${INSTALL_DIR}/requirements.txt" -q 2>&1 | tail -5 || true
+fi
 
 # ------------------------------------------------------------------
 # 6. Write environment configuration

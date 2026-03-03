@@ -79,9 +79,15 @@ if [ -d "${INSTALL_DIR}/.git" ]; then
 else
     echo "Cloning ezlocalai repository..."
     sudo mkdir -p "$(dirname "${INSTALL_DIR}")"
-    sudo chown "$(whoami)" "$(dirname "${INSTALL_DIR}")" 2>/dev/null || true
-    git clone "${REPO_URL}" "${INSTALL_DIR}"
+    sudo git clone "${REPO_URL}" "${INSTALL_DIR}"
+    sudo chown -R "$(whoami):$(id -gn)" "${INSTALL_DIR}"
     cd "${INSTALL_DIR}"
+fi
+
+# Ensure the install directory is owned by the current user
+if [ -d "${INSTALL_DIR}" ] && [ ! -w "${INSTALL_DIR}" ]; then
+    echo "Fixing ownership of ${INSTALL_DIR}..."
+    sudo chown -R "$(whoami):$(id -gn)" "${INSTALL_DIR}"
 fi
 
 # ------------------------------------------------------------------

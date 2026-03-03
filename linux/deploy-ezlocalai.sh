@@ -125,19 +125,27 @@ if [ -f "${INSTALL_DIR}/requirements.txt" ]; then
     echo "Installing runtime dependencies..."
     ARCH=$(uname -m)
     if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
-        # On ARM64, install packages one-by-one so a missing wheel for one
-        # (e.g. torchcodec) doesn't block all other packages from installing.
-        FAILED_PKGS=()
-        while IFS= read -r line; do
-            line=$(echo "$line" | xargs)  # trim whitespace
-            [[ -z "$line" || "$line" == \#* ]] && continue
-            pip install "$line" -q 2>/dev/null || FAILED_PKGS+=("$line")
-        done < "${INSTALL_DIR}/requirements.txt"
-        if [ ${#FAILED_PKGS[@]} -gt 0 ]; then
-            echo "⚠️  ${#FAILED_PKGS[@]} package(s) skipped (no ARM64 wheel):"
-            for pkg in "${FAILED_PKGS[@]}"; do
-                echo "   - $pkg"
-            done
+        # On ARM64, try batch first (preserves pip version resolver),
+        # fall back to individual install if batch fails.
+        if pip install -r "${INSTALL_DIR}/requirements.txt" -q 2>/dev/null; then
+            echo "All packages installed successfully."
+        else
+            echo "Batch install failed, installing packages individually..."
+            FAILED_PKGS=()
+            while IFS= read -r line; do
+                line=$(echo "$line" | xargs)  # trim whitespace
+                [[ -z "$line" || "$line" == \#* ]] && continue
+                # Strip inline comments (e.g. "package>=1.0  # description")
+                line=$(echo "$line" | sed 's/ #.*$//')
+                [[ -z "$line" ]] && continue
+                pip install "$line" -q 2>/dev/null || FAILED_PKGS+=("$line")
+            done < "${INSTALL_DIR}/requirements.txt"
+            if [ ${#FAILED_PKGS[@]} -gt 0 ]; then
+                echo "⚠️  ${#FAILED_PKGS[@]} package(s) skipped (no ARM64 wheel):"
+                for pkg in "${FAILED_PKGS[@]}"; do
+                    echo "   - $pkg"
+                done
+            fi
         fi
     else
         pip install -r "${INSTALL_DIR}/requirements.txt" -q 2>&1 | tail -5 || true

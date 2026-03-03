@@ -243,3 +243,17 @@ if command -v systemctl &>/dev/null; then
 fi
 LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || ip route get 1 2>/dev/null | awk '{print $7; exit}' || echo "localhost")
 echo "Server will be available at: http://${LOCAL_IP}:${EZLOCALAI_PORT}"
+
+# ------------------------------------------------------------------
+# 9. Start the server
+# ------------------------------------------------------------------
+echo ""
+echo "Starting ezlocalai..."
+if command -v systemctl &>/dev/null && [ -f /etc/systemd/system/ezlocalai.service ]; then
+    sudo systemctl start ezlocalai.service
+    echo "ezlocalai started via systemd."
+else
+    source "${VENV_DIR}/bin/activate"
+    cd "${INSTALL_DIR}"
+    ezlocalai start --model "${DEFAULT_MODEL}"
+fi

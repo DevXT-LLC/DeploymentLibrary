@@ -236,3 +236,12 @@ echo "  launchctl unload ${PLIST_FILE}"
 echo ""
 LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "localhost")
 echo "Server will be available at: http://${LOCAL_IP}:${EZLOCALAI_PORT}"
+
+# ------------------------------------------------------------------
+# 9. Start the server
+# ------------------------------------------------------------------
+echo ""
+echo "Starting ezlocalai..."
+source "${VENV_DIR}/bin/activate"
+cd "${INSTALL_DIR}"
+ezlocalai start --model "${DEFAULT_MODEL}"

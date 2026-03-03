@@ -14,8 +14,14 @@ TTS_ENABLED="${EZLOCALAI_TTS_ENABLED:-true}"
 STT_ENABLED="${EZLOCALAI_STT_ENABLED:-true}"
 QUANT_TYPE="${EZLOCALAI_QUANT_TYPE:-Q4_K_XL}"
 LLM_BATCH_SIZE="${EZLOCALAI_BATCH_SIZE:-2048}"
+VOICE_SERVER="${EZLOCALAI_VOICE_SERVER:-}"
 PYTHON_VERSION="${PYTHON_VERSION:-3.11}"
 REPO_URL="https://github.com/DevXT-LLC/ezlocalai.git"
+
+# If IMG_MODEL doesn't contain a "/", treat it as disabled (empty)
+if [[ "${IMG_MODEL}" != */* ]]; then
+    IMG_MODEL=""
+fi
 
 echo "============================================="
 echo "  ezlocalai Deployment Script (macOS)"
@@ -113,6 +119,7 @@ TTS_ENABLED=${TTS_ENABLED}
 STT_ENABLED=${STT_ENABLED}
 QUANT_TYPE=${QUANT_TYPE}
 LLM_BATCH_SIZE=${LLM_BATCH_SIZE}
+VOICE_SERVER=${VOICE_SERVER}
 ENVEOF
 
 echo "Configuration written."

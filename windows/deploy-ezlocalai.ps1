@@ -14,7 +14,13 @@ $TtsEnabled = if ($env:EZLOCALAI_TTS_ENABLED) { $env:EZLOCALAI_TTS_ENABLED } els
 $SttEnabled = if ($env:EZLOCALAI_STT_ENABLED) { $env:EZLOCALAI_STT_ENABLED } else { "true" }
 $QuantType = if ($env:EZLOCALAI_QUANT_TYPE) { $env:EZLOCALAI_QUANT_TYPE } else { "Q4_K_XL" }
 $BatchSize = if ($env:EZLOCALAI_BATCH_SIZE) { $env:EZLOCALAI_BATCH_SIZE } else { "2048" }
+$VoiceServer = if ($env:EZLOCALAI_VOICE_SERVER) { $env:EZLOCALAI_VOICE_SERVER } else { "" }
 $RepoUrl = "https://github.com/DevXT-LLC/ezlocalai.git"
+
+# If IMG_MODEL doesn't contain a "/", treat it as disabled (empty)
+if ($ImgModel -notmatch '/') {
+    $ImgModel = ""
+}
 
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host "  ezlocalai Deployment Script (Windows)" -ForegroundColor Cyan
@@ -120,6 +126,7 @@ TTS_ENABLED=$TtsEnabled
 STT_ENABLED=$SttEnabled
 QUANT_TYPE=$QuantType
 LLM_BATCH_SIZE=$BatchSize
+VOICE_SERVER=$VoiceServer
 "@ | Set-Content -Path $EnvFile -Encoding UTF8
 
 Write-Host "Configuration written."

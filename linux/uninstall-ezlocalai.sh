@@ -8,7 +8,7 @@ echo "============================================="
 echo "  Uninstalling ezlocalai"
 echo "============================================="
 
-# Stop via CLI if possible
+# Stop via CLI
 VENV_DIR="${INSTALL_DIR}/.venv"
 if [ -d "${VENV_DIR}" ]; then
     source "${VENV_DIR}/bin/activate" 2>/dev/null || true

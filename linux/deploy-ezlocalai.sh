@@ -1,6 +1,7 @@
 #!/bin/bash
 # Deploy ezlocalai - Local AI Inference Server
 # Clones ezlocalai, creates a Python venv, installs it, configures env vars, and starts the server.
+# The ezlocalai CLI handles platform detection (Docker vs native for ARM64/Jetson).
 set -e
 
 INSTALL_DIR="${EZLOCALAI_INSTALL_DIR:-/opt/ezlocalai}"
@@ -128,57 +129,6 @@ ENVEOF
 
 echo "Configuration written."
 
-# ------------------------------------------------------------------
-# 7. Create management wrapper scripts
-# ------------------------------------------------------------------
-SCRIPTS_DIR="${INSTALL_DIR}/scripts"
-mkdir -p "${SCRIPTS_DIR}"
-
-cat > "${SCRIPTS_DIR}/start.sh" <<'STARTEOF'
-#!/bin/bash
-SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-source "${SCRIPT_DIR}/.venv/bin/activate"
-cd "${SCRIPT_DIR}"
-ezlocalai start "$@"
-STARTEOF
-chmod +x "${SCRIPTS_DIR}/start.sh"
-
-cat > "${SCRIPTS_DIR}/stop.sh" <<'STOPEOF'
-#!/bin/bash
-SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-source "${SCRIPT_DIR}/.venv/bin/activate"
-cd "${SCRIPT_DIR}"
-ezlocalai stop
-STOPEOF
-chmod +x "${SCRIPTS_DIR}/stop.sh"
-
-cat > "${SCRIPTS_DIR}/restart.sh" <<'RESTARTEOF'
-#!/bin/bash
-SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-source "${SCRIPT_DIR}/.venv/bin/activate"
-cd "${SCRIPT_DIR}"
-ezlocalai restart "$@"
-RESTARTEOF
-chmod +x "${SCRIPTS_DIR}/restart.sh"
-
-cat > "${SCRIPTS_DIR}/status.sh" <<'STATUSEOF'
-#!/bin/bash
-SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-source "${SCRIPT_DIR}/.venv/bin/activate"
-cd "${SCRIPT_DIR}"
-ezlocalai status
-STATUSEOF
-chmod +x "${SCRIPTS_DIR}/status.sh"
-
-cat > "${SCRIPTS_DIR}/logs.sh" <<'LOGSEOF'
-#!/bin/bash
-SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-source "${SCRIPT_DIR}/.venv/bin/activate"
-cd "${SCRIPT_DIR}"
-ezlocalai logs -f
-LOGSEOF
-chmod +x "${SCRIPTS_DIR}/logs.sh"
-
 echo ""
 echo "============================================="
 echo "  ezlocalai Deployment Complete!"
@@ -196,18 +146,11 @@ echo "  ezlocalai restart      # Restart the server"
 echo "  ezlocalai status       # Check server status"
 echo "  ezlocalai logs -f      # Follow server logs"
 echo ""
-echo "Or use the wrapper scripts:"
-echo "  ${SCRIPTS_DIR}/start.sh"
-echo "  ${SCRIPTS_DIR}/stop.sh"
-echo "  ${SCRIPTS_DIR}/restart.sh"
-echo "  ${SCRIPTS_DIR}/status.sh"
-echo "  ${SCRIPTS_DIR}/logs.sh"
-echo ""
 LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || ip route get 1 2>/dev/null | awk '{print $7; exit}' || echo "localhost")
 echo "Server will be available at: http://${LOCAL_IP}:${EZLOCALAI_PORT}"
 
 # ------------------------------------------------------------------
-# 8. Start the server
+# 7. Start the server
 # ------------------------------------------------------------------
 echo ""
 echo "Starting ezlocalai..."

@@ -129,37 +129,7 @@ ENVEOF
 echo "Configuration written."
 
 # ------------------------------------------------------------------
-# 7. Create systemd service (optional, runs as current user)
-# ------------------------------------------------------------------
-SERVICE_FILE="/etc/systemd/system/ezlocalai.service"
-if command -v systemctl &>/dev/null; then
-    echo "Creating systemd service..."
-    sudo tee "${SERVICE_FILE}" > /dev/null <<SVCEOF
-[Unit]
-Description=ezlocalai Local AI Inference Server
-After=network.target
-
-[Service]
-Type=simple
-User=$(whoami)
-WorkingDirectory=${INSTALL_DIR}
-EnvironmentFile=${ENV_FILE}
-ExecStart=${VENV_DIR}/bin/ezlocalai start --model ${DEFAULT_MODEL}
-ExecStop=${VENV_DIR}/bin/ezlocalai stop
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-SVCEOF
-
-    sudo systemctl daemon-reload
-    sudo systemctl enable ezlocalai.service
-    echo "Systemd service created and enabled."
-fi
-
-# ------------------------------------------------------------------
-# 8. Create management wrapper scripts
+# 7. Create management wrapper scripts
 # ------------------------------------------------------------------
 SCRIPTS_DIR="${INSTALL_DIR}/scripts"
 mkdir -p "${SCRIPTS_DIR}"
@@ -233,27 +203,13 @@ echo "  ${SCRIPTS_DIR}/restart.sh"
 echo "  ${SCRIPTS_DIR}/status.sh"
 echo "  ${SCRIPTS_DIR}/logs.sh"
 echo ""
-if command -v systemctl &>/dev/null; then
-    echo "Systemd service:"
-    echo "  sudo systemctl start ezlocalai"
-    echo "  sudo systemctl stop ezlocalai"
-    echo "  sudo systemctl restart ezlocalai"
-    echo "  sudo systemctl status ezlocalai"
-    echo ""
-fi
 LOCAL_IP=$(hostname -I 2>/dev/null | awk '{print $1}' || ip route get 1 2>/dev/null | awk '{print $7; exit}' || echo "localhost")
 echo "Server will be available at: http://${LOCAL_IP}:${EZLOCALAI_PORT}"
 
 # ------------------------------------------------------------------
-# 9. Start the server
+# 8. Start the server
 # ------------------------------------------------------------------
 echo ""
 echo "Starting ezlocalai..."
-if command -v systemctl &>/dev/null && [ -f /etc/systemd/system/ezlocalai.service ]; then
-    sudo systemctl start ezlocalai.service
-    echo "ezlocalai started via systemd."
-else
-    source "${VENV_DIR}/bin/activate"
-    cd "${INSTALL_DIR}"
-    ezlocalai start --model "${DEFAULT_MODEL}"
-fi
+cd "${INSTALL_DIR}"
+ezlocalai start --model "${DEFAULT_MODEL}"

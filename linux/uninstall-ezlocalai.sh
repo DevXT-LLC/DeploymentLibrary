@@ -8,15 +8,12 @@ echo "============================================="
 echo "  Uninstalling ezlocalai"
 echo "============================================="
 
-# Stop and disable systemd service
-if command -v systemctl &>/dev/null; then
-    if systemctl list-unit-files ezlocalai.service &>/dev/null 2>&1; then
-        echo "Stopping and disabling systemd service..."
-        sudo systemctl stop ezlocalai.service 2>/dev/null || true
-        sudo systemctl disable ezlocalai.service 2>/dev/null || true
-        sudo rm -f /etc/systemd/system/ezlocalai.service
-        sudo systemctl daemon-reload
-    fi
+# Stop via CLI if possible
+VENV_DIR="${INSTALL_DIR}/.venv"
+if [ -d "${VENV_DIR}" ]; then
+    source "${VENV_DIR}/bin/activate" 2>/dev/null || true
+    cd "${INSTALL_DIR}" 2>/dev/null || true
+    ezlocalai stop 2>/dev/null || true
 fi
 
 # Stop any running containers

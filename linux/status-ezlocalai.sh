@@ -7,13 +7,6 @@ VENV_DIR="${INSTALL_DIR}/.venv"
 
 echo "Checking ezlocalai status..."
 
-# Try systemd first
-if command -v systemctl &>/dev/null && systemctl list-unit-files ezlocalai.service &>/dev/null 2>&1; then
-    sudo systemctl status ezlocalai.service --no-pager || true
-    echo ""
-fi
-
-# Also check via CLI
 if [ -d "${VENV_DIR}" ]; then
     source "${VENV_DIR}/bin/activate"
     cd "${INSTALL_DIR}"

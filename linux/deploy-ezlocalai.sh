@@ -106,7 +106,18 @@ cd "${INSTALL_DIR}"
 pip install -e . -q
 
 # ------------------------------------------------------------------
-# 5. Start via CLI (handles GPU detection + Docker Compose)
+# 5. Ensure Docker starts on boot
+# ------------------------------------------------------------------
+echo "Ensuring Docker starts on boot..."
+if command -v systemctl &>/dev/null; then
+    sudo systemctl enable docker 2>/dev/null || true
+    echo "✅ Docker enabled at boot"
+else
+    echo "⚠️  systemctl not found, skipping boot enable"
+fi
+
+# ------------------------------------------------------------------
+# 6. Start via CLI (handles GPU detection + Docker Compose)
 # ------------------------------------------------------------------
 echo ""
 echo "Starting ezlocalai..."

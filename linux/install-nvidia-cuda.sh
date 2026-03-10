@@ -92,11 +92,12 @@ NOUVEAU
         sudo update-initramfs -u 2>/dev/null || true
     fi
 
-    # 4. Install NVIDIA driver + CUDA toolkit in one pass
-    #    The "cuda-X-Y" meta-package pulls both the matched driver and toolkit.
+    # 4. Install NVIDIA driver + CUDA toolkit
+    #    cuda-drivers installs the actual kernel module; cuda-X-Y installs the toolkit.
+    #    The "cuda-X-Y" meta-package alone only pulls userspace libs, NOT the kernel driver.
     if ! has_nvidia_driver; then
-        echo "NVIDIA driver not detected – installing driver + CUDA toolkit..."
-        apt_install "cuda-${CUDA_DASH}"
+        echo "NVIDIA driver not detected – installing kernel driver + CUDA toolkit..."
+        apt_install cuda-drivers "cuda-toolkit-${CUDA_DASH}"
     else
         CURRENT_DRV=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -1 || true)
         echo "NVIDIA driver ${CURRENT_DRV} already installed – installing CUDA toolkit only..."
@@ -158,8 +159,8 @@ elif command -v dnf &>/dev/null || command -v yum &>/dev/null; then
 
     # 3. Install driver + toolkit
     if ! has_nvidia_driver; then
-        echo "NVIDIA driver not detected – installing driver + CUDA toolkit..."
-        sudo $PKG_MGR install -y "cuda-${CUDA_DASH}"
+        echo "NVIDIA driver not detected – installing kernel driver + CUDA toolkit..."
+        sudo $PKG_MGR install -y cuda-drivers "cuda-toolkit-${CUDA_DASH}"
     else
         echo "NVIDIA driver already installed – installing CUDA toolkit only..."
         sudo $PKG_MGR install -y "cuda-toolkit-${CUDA_DASH}"

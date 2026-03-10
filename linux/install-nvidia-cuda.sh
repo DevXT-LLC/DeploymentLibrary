@@ -12,57 +12,113 @@ export NEEDRESTART_MODE=a
 export NEEDRESTART_SUSPEND=1
 
 CUDA_VER="${CUDA_VERSION:-12.8}"
+# Convert dot version (12.8) to dash version (12-8) for package names
+CUDA_DASH="${CUDA_VER/./-}"
 echo "Installing NVIDIA CUDA Toolkit ${CUDA_VER}..."
+
+# -------------------------------------------------------------------
+# Helper: map dpkg arch to NVIDIA repo arch
+# NVIDIA uses x86_64/sbsa in their repo URLs, not Debian-style amd64/arm64
+# -------------------------------------------------------------------
+nvidia_arch() {
+    local dpkg_arch
+    dpkg_arch=$(dpkg --print-architecture 2>/dev/null || uname -m)
+    case "$dpkg_arch" in
+        amd64|x86_64) echo "x86_64" ;;
+        arm64|aarch64) echo "sbsa" ;;
+        *) echo "$dpkg_arch" ;;
+    esac
+}
 
 # -------------------------------------------------------------------
 # Helper: check whether the NVIDIA driver is already loaded
 # -------------------------------------------------------------------
 has_nvidia_driver() {
-    nvidia-smi &>/dev/null
+    command -v nvidia-smi &>/dev/null && nvidia-smi &>/dev/null
+}
+
+# -------------------------------------------------------------------
+# apt helper – noninteractive with dpkg options
+# -------------------------------------------------------------------
+apt_install() {
+    sudo DEBIAN_FRONTEND=noninteractive \
+        apt-get install -y \
+        -o Dpkg::Options::="--force-confdef" \
+        -o Dpkg::Options::="--force-confold" \
+        "$@"
 }
 
 if command -v apt-get &>/dev/null; then
     # ---------------------------------------------------------------
     # Ubuntu / Debian
     # ---------------------------------------------------------------
+    DISTRO=$(lsb_release -is 2>/dev/null | tr '[:upper:]' '[:lower:]')
+    RELEASE=$(lsb_release -rs 2>/dev/null | tr -d '.')
+    ARCH=$(nvidia_arch)
+    REPO_BASE="https://developer.download.nvidia.com/compute/cuda/repos/${DISTRO}${RELEASE}/${ARCH}"
 
     # 1. Ensure basic prerequisites are present
-    sudo apt-get update -qq
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
+    echo "Installing prerequisites..."
+    sudo apt-get update
+    apt_install \
         build-essential \
         dkms \
         linux-headers-"$(uname -r)" \
         wget \
         gnupg \
-        lsb-release
+        lsb-release \
+        pciutils
 
-    # 2. Determine distro identifiers for the CUDA repo
-    DISTRO=$(lsb_release -is | tr '[:upper:]' '[:lower:]')
-    RELEASE=$(lsb_release -rs | tr -d '.')
-    ARCH=$(dpkg --print-architecture)
-
-    # 3. Add the NVIDIA CUDA repository (idempotent – safe to re-run)
-    KEYRING_URL="https://developer.download.nvidia.com/compute/cuda/repos/${DISTRO}${RELEASE}/${ARCH}/cuda-keyring_1.1-1_all.deb"
+    # 2. Set up NVIDIA CUDA repository with proper pin priority
     echo "Adding NVIDIA CUDA repository (${DISTRO}${RELEASE}/${ARCH})..."
-    wget -q "$KEYRING_URL" -O /tmp/cuda-keyring.deb
+
+    # Pin file ensures NVIDIA packages take priority
+    wget -q "${REPO_BASE}/cuda-${DISTRO}${RELEASE}.pin" -O /tmp/cuda-pin
+    sudo mv /tmp/cuda-pin /etc/apt/preferences.d/cuda-repository-pin-600
+
+    # Install the keyring package for repo authentication
+    wget -q "${REPO_BASE}/cuda-keyring_1.1-1_all.deb" -O /tmp/cuda-keyring.deb
     sudo DEBIAN_FRONTEND=noninteractive dpkg -i /tmp/cuda-keyring.deb
     rm -f /tmp/cuda-keyring.deb
-    sudo apt-get update -qq
+    sudo apt-get update
 
-    # 4. Install NVIDIA driver if not already present
-    if ! has_nvidia_driver; then
-        echo "NVIDIA driver not detected – installing driver..."
-        # cuda-drivers pulls the recommended driver version for the installed GPU
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" cuda-drivers
-        echo "NVIDIA driver installed."
-    else
-        echo "NVIDIA driver already installed ($(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -1))."
+    # 3. Blacklist nouveau so it does not conflict with the NVIDIA driver
+    if ! grep -qs "blacklist nouveau" /etc/modprobe.d/blacklist-nouveau.conf 2>/dev/null; then
+        echo "Blacklisting nouveau driver..."
+        sudo tee /etc/modprobe.d/blacklist-nouveau.conf > /dev/null <<'NOUVEAU'
+blacklist nouveau
+options nouveau modeset=0
+NOUVEAU
+        sudo update-initramfs -u 2>/dev/null || true
     fi
 
-    # 5. Install the CUDA toolkit
-    CUDA_PKG="cuda-toolkit-${CUDA_VER/./-}"
-    echo "Installing ${CUDA_PKG}..."
-    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" "$CUDA_PKG"
+    # 4. Install NVIDIA driver + CUDA toolkit in one pass
+    #    The "cuda-X-Y" meta-package pulls both the matched driver and toolkit.
+    if ! has_nvidia_driver; then
+        echo "NVIDIA driver not detected – installing driver + CUDA toolkit..."
+        apt_install "cuda-${CUDA_DASH}"
+    else
+        CURRENT_DRV=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -1 || true)
+        echo "NVIDIA driver ${CURRENT_DRV} already installed – installing CUDA toolkit only..."
+        apt_install "cuda-toolkit-${CUDA_DASH}"
+    fi
+
+    # 5. Install NVIDIA Container Toolkit (useful for Docker GPU workloads)
+    if command -v docker &>/dev/null; then
+        echo "Docker detected – installing NVIDIA Container Toolkit..."
+        if [ ! -f /usr/share/keyrings/nvidia-container-toolkit.gpg ]; then
+            curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | \
+                sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit.gpg
+        fi
+        curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit.gpg] https://#' | \
+            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list > /dev/null
+        sudo apt-get update
+        apt_install nvidia-container-toolkit
+        sudo nvidia-ctk runtime configure --runtime=docker 2>/dev/null || true
+        sudo systemctl restart docker 2>/dev/null || true
+        echo "NVIDIA Container Toolkit installed."
+    fi
 
 elif command -v dnf &>/dev/null || command -v yum &>/dev/null; then
     # ---------------------------------------------------------------
@@ -70,8 +126,10 @@ elif command -v dnf &>/dev/null || command -v yum &>/dev/null; then
     # ---------------------------------------------------------------
     PKG_MGR="dnf"
     command -v dnf &>/dev/null || PKG_MGR="yum"
+    ARCH=$(uname -m)
 
     # 1. Prerequisites
+    echo "Installing prerequisites..."
     sudo $PKG_MGR install -y \
         kernel-devel-"$(uname -r)" \
         kernel-headers-"$(uname -r)" \
@@ -79,11 +137,10 @@ elif command -v dnf &>/dev/null || command -v yum &>/dev/null; then
         gcc-c++ \
         make \
         dkms \
-        wget
+        wget \
+        pciutils
 
     # 2. Add the NVIDIA CUDA repository
-    ARCH=$(uname -m)
-    # Detect RHEL major version (fallback to 8)
     if [ -f /etc/os-release ]; then
         RHEL_VER=$(. /etc/os-release && echo "${VERSION_ID%%.*}")
     else
@@ -99,19 +156,14 @@ elif command -v dnf &>/dev/null || command -v yum &>/dev/null; then
         sudo yum-config-manager --add-repo "$REPO_URL"
     fi
 
-    # 3. Install NVIDIA driver if not already present
+    # 3. Install driver + toolkit
     if ! has_nvidia_driver; then
-        echo "NVIDIA driver not detected – installing driver..."
-        sudo $PKG_MGR install -y cuda-drivers
-        echo "NVIDIA driver installed."
+        echo "NVIDIA driver not detected – installing driver + CUDA toolkit..."
+        sudo $PKG_MGR install -y "cuda-${CUDA_DASH}"
     else
-        echo "NVIDIA driver already installed ($(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -1))."
+        echo "NVIDIA driver already installed – installing CUDA toolkit only..."
+        sudo $PKG_MGR install -y "cuda-toolkit-${CUDA_DASH}"
     fi
-
-    # 4. Install the CUDA toolkit
-    CUDA_PKG="cuda-toolkit-${CUDA_VER/./-}"
-    echo "Installing ${CUDA_PKG}..."
-    sudo $PKG_MGR install -y "$CUDA_PKG"
 
 else
     echo "ERROR: Unsupported package manager. This script supports apt (Ubuntu/Debian) and dnf/yum (RHEL/Fedora/CentOS)."

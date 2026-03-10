@@ -4,6 +4,13 @@
 # Supports machines with no existing NVIDIA drivers installed.
 set -e
 
+# -------------------------------------------------------------------
+# Ensure fully non-interactive operation (no TTY required)
+# -------------------------------------------------------------------
+export DEBIAN_FRONTEND=noninteractive
+export NEEDRESTART_MODE=a
+export NEEDRESTART_SUSPEND=1
+
 CUDA_VER="${CUDA_VERSION:-12.8}"
 echo "Installing NVIDIA CUDA Toolkit ${CUDA_VER}..."
 
@@ -20,8 +27,8 @@ if command -v apt-get &>/dev/null; then
     # ---------------------------------------------------------------
 
     # 1. Ensure basic prerequisites are present
-    sudo apt-get update
-    sudo apt-get install -y \
+    sudo apt-get update -qq
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" \
         build-essential \
         dkms \
         linux-headers-"$(uname -r)" \
@@ -38,15 +45,15 @@ if command -v apt-get &>/dev/null; then
     KEYRING_URL="https://developer.download.nvidia.com/compute/cuda/repos/${DISTRO}${RELEASE}/${ARCH}/cuda-keyring_1.1-1_all.deb"
     echo "Adding NVIDIA CUDA repository (${DISTRO}${RELEASE}/${ARCH})..."
     wget -q "$KEYRING_URL" -O /tmp/cuda-keyring.deb
-    sudo dpkg -i /tmp/cuda-keyring.deb
+    sudo DEBIAN_FRONTEND=noninteractive dpkg -i /tmp/cuda-keyring.deb
     rm -f /tmp/cuda-keyring.deb
-    sudo apt-get update
+    sudo apt-get update -qq
 
     # 4. Install NVIDIA driver if not already present
     if ! has_nvidia_driver; then
         echo "NVIDIA driver not detected – installing driver..."
         # cuda-drivers pulls the recommended driver version for the installed GPU
-        sudo apt-get install -y cuda-drivers
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" cuda-drivers
         echo "NVIDIA driver installed."
     else
         echo "NVIDIA driver already installed ($(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -1))."
@@ -55,7 +62,7 @@ if command -v apt-get &>/dev/null; then
     # 5. Install the CUDA toolkit
     CUDA_PKG="cuda-toolkit-${CUDA_VER/./-}"
     echo "Installing ${CUDA_PKG}..."
-    sudo apt-get install -y "$CUDA_PKG"
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" "$CUDA_PKG"
 
 elif command -v dnf &>/dev/null || command -v yum &>/dev/null; then
     # ---------------------------------------------------------------
